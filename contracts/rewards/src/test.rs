@@ -260,3 +260,26 @@ proptest! {
         }
     }
 }
+
+#[test]
+fn upgrade_works() {
+    let f = setup();
+    f.rewards.add_reward(&1u32, &30u64, &50i128);
+    let hash = soroban_sdk::BytesN::from_array(&f.env, &[1; 32]);
+    f.rewards.upgrade(&hash);
+    assert_eq!(f.rewards.get_rewards().len(), 1);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn non_admin_upgrade_reverts() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let usdc = Address::generate(&env);
+    let rep = Address::generate(&env);
+    let id = env.register(RewardsContract, ());
+    let client = RewardsContractClient::new(&env, &id);
+    client.init(&admin, &usdc, &rep);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+}

@@ -102,3 +102,25 @@ fn admin_release_clears_a_squatted_handle() {
     client.claim(&real, &symbol_short!("brand"));
     assert_eq!(client.resolve(&symbol_short!("brand")), Some(real));
 }
+
+#[test]
+fn upgrade_works() {
+    let (env, client, _admin) = setup();
+    let alice = Address::generate(&env);
+    client.claim(&alice, &symbol_short!("alice"));
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+    assert_eq!(client.resolve(&symbol_short!("alice")), Some(alice));
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn non_admin_upgrade_reverts() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let id = env.register(RegistryContract, ());
+    let client = RegistryContractClient::new(&env, &id);
+    client.init(&admin);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+}

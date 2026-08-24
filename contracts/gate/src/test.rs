@@ -147,3 +147,25 @@ fn get_gates_lists_and_dedupes_updates() {
     assert_eq!(gs.len(), 2);
     assert_eq!(gs.get(0).unwrap().min, 10); // reflects the update
 }
+
+#[test]
+fn upgrade_works() {
+    let f = setup();
+    f.gate.create_gate(&1u32, &TRACK_SOCIAL, &5u64, &String::from_str(&f.env, "a"));
+    let hash = soroban_sdk::BytesN::from_array(&f.env, &[1; 32]);
+    f.gate.upgrade(&hash);
+    assert_eq!(f.gate.get_gates().len(), 1);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn non_admin_upgrade_reverts() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let rep = Address::generate(&env);
+    let id = env.register(GateContract, ());
+    let client = GateContractClient::new(&env, &id);
+    client.init(&admin, &rep);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+}

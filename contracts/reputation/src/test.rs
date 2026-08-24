@@ -336,3 +336,27 @@ proptest! {
         prop_assert_eq!(client.get_score(&user), 0);
     }
 }
+
+#[test]
+fn upgrade_works() {
+    let (env, client, _admin) = setup();
+    let attester = Address::generate(&env);
+    client.add_attester(&attester);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+    let user = Address::generate(&env);
+    client.award_xp(&attester, &user, &2u32, &50u64);
+    assert_eq!(client.get_earned(&user), 50);
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn non_admin_upgrade_reverts() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let id = env.register(ReputationContract, ());
+    let client = ReputationContractClient::new(&env, &id);
+    client.init(&admin);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+}

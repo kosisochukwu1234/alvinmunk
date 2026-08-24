@@ -166,3 +166,25 @@ fn same_week_completions_do_not_double_count_streak() {
     award(&f, &f.attester_sk, 2, &user); // same week
     assert_eq!(f.quest.get_streak(&user).weeks, 1);
 }
+
+#[test]
+fn upgrade_works() {
+    let f = setup();
+    f.quest.create_quest(&1u32, &2u32, &50u64);
+    let hash = soroban_sdk::BytesN::from_array(&f.env, &[1; 32]);
+    f.quest.upgrade(&hash);
+    assert!(f.quest.get_quest(&1u32).is_some());
+}
+
+#[test]
+#[should_panic(expected = "HostError: Error(Auth, InvalidAction)")]
+fn non_admin_upgrade_reverts() {
+    let env = Env::default();
+    let admin = Address::generate(&env);
+    let rep = Address::generate(&env);
+    let id = env.register(QuestRegistryContract, ());
+    let client = QuestRegistryContractClient::new(&env, &id);
+    client.init(&admin, &rep);
+    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+    client.upgrade(&hash);
+}
