@@ -103,14 +103,21 @@ fn admin_release_clears_a_squatted_handle() {
     assert_eq!(client.resolve(&symbol_short!("brand")), Some(real));
 }
 
+/// Release build of this contract, committed so the upgrade path can be tested without a
+/// wasm build step in CI. Refresh with `make upgrade-fixtures` after changing the contract.
+const REGISTRY_WASM: &[u8] = include_bytes!("../testdata/alvinmunk_registry.wasm");
+
 #[test]
-fn upgrade_works() {
+fn upgrade_to_identical_wasm_preserves_handles() {
     let (env, client, _admin) = setup();
     let alice = Address::generate(&env);
     client.claim(&alice, &symbol_short!("alice"));
-    let hash = soroban_sdk::BytesN::from_array(&env, &[1; 32]);
+
+    let hash = env.deployer().upload_contract_wasm(REGISTRY_WASM);
     client.upgrade(&hash);
-    assert_eq!(client.resolve(&symbol_short!("alice")), Some(alice));
+
+    assert_eq!(client.resolve(&symbol_short!("alice")), Some(alice.clone()));
+    assert_eq!(client.reverse(&alice), Some(symbol_short!("alice")));
 }
 
 #[test]
