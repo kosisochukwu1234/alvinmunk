@@ -30,10 +30,6 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
   return (
     <header
       className={cn(
@@ -90,13 +86,14 @@ export function Navbar() {
                   key={l.href}
                   href={l.href}
                   aria-current={active ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
                   className="rounded-xl px-4 py-3 text-sm text-foreground/90 hover:bg-muted"
                 >
                   {l.label}
                 </Link>
               );
             })}
-            <div className="px-2 pt-2">
+            <div className="px-2 pt-2" onClick={() => setOpen(false)}>
               <ConnectButton />
             </div>
           </div>
