@@ -10,6 +10,13 @@ NETWORK="${NETWORK:-testnet}"
 # Testnet USDC SAC — replace with the real SAC id you wrap, or the canonical mainnet USDC.
 USDC_SAC="${USDC_SAC:-REPLACE_WITH_USDC_SAC_CONTRACT_ID}"
 
+[[ "$USDC_SAC" =~ ^C[A-Z2-7]{55}$ ]] || { echo "USDC_SAC must be a contract id (C…)" >&2; exit 2; }
+case "$NETWORK" in
+  testnet|futurenet) ;;
+  *) echo "refusing NETWORK=$NETWORK" >&2; exit 2 ;;
+esac
+command -v stellar >/dev/null || { echo "stellar CLI not found" >&2; exit 2; }
+
 ADMIN_ADDR=$(stellar keys address "$ADMIN")
 ATTESTER_ADDR=$(stellar keys address "$ATTESTER")
 
@@ -25,10 +32,13 @@ deploy () { # $1 = wasm filename
 
 echo "==> Deploying reputation"
 REP_ID=$(deploy alvinmunk_reputation.wasm)
+echo "REP_ID=$REP_ID" >&2
 echo "==> Deploying quest_registry"
 QUEST_ID=$(deploy alvinmunk_quest_registry.wasm)
+echo "QUEST_ID=$QUEST_ID" >&2
 echo "==> Deploying rewards"
 REWARDS_ID=$(deploy alvinmunk_rewards.wasm)
+echo "REWARDS_ID=$REWARDS_ID" >&2
 
 inv () { stellar contract invoke --id "$1" --source "$ADMIN" --network "$NETWORK" -- "${@:2}"; }
 

@@ -60,7 +60,7 @@ Rewards tips/claims move USDC through a Stellar Asset Contract (SAC). On testnet
 CAKT2EK2SFGNXTXVSYZLZXA5YB5QPVHLTVUMRHLJTF5RFFAFMIRNPZT2
 ```
 
-Or wrap/issue your own SAC and pass that id instead. Without a real SAC id, `deploy-testnet.sh` will still print placeholders — but tips, claims, and the faucet will not work until you set a valid one.
+Or wrap/issue your own SAC and pass that id instead. Without a real SAC id, `deploy-testnet.sh` will exit with an error before building.
 
 ---
 
