@@ -30,9 +30,13 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Back/forward navigation never taps a link inside the panel, so any route change
+  // closes it too.
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  const closePanel = () => setOpen(false);
 
   return (
     <header
@@ -90,14 +94,17 @@ export function Navbar() {
                   key={l.href}
                   href={l.href}
                   aria-current={active ? 'page' : undefined}
+                  onClick={closePanel}
                   className="rounded-xl px-4 py-3 text-sm text-foreground/90 hover:bg-muted"
                 >
                   {l.label}
                 </Link>
               );
             })}
+            {/* Close only when a link inside is followed: a wrapper that closed on any click
+                would unmount the account menu the moment its chip is tapped. */}
             <div className="px-2 pt-2">
-              <ConnectButton />
+              <ConnectButton onNavigate={closePanel} />
             </div>
           </div>
         </div>
